@@ -24,9 +24,9 @@ void start() async {
 
   // Define as rotas
   router.get('/usuarios', usuariosController.listarUsuarios);
-  router.post('/usuarios', usuariosController.criarUsuario);
-  router.put('/usuarios/<id>', usuariosController.atualizarUsuario);
-  router.delete('/usuarios/<id>', usuariosController.deletarUsuario);
+  router.post('/usuarios/novo', usuariosController.criarUsuario);
+  router.put('/usuarios/<id_usuario>', usuariosController.atualizarUsuario);
+  router.delete('/usuarios/delete', usuariosController.deletarUsuario);
 
   // Rota 404 para rotas não encontradas
   router.all('/<ignored|.*>', (Request request) {

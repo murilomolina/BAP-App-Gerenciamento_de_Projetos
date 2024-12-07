@@ -1,4 +1,4 @@
-import 'package:bap_gerenciamento_projetos/blocs/bloc_login.dart';
+import 'package:bap_gerenciamento_projetos/blocs/bloc_usuario_app.dart';
 import 'package:bap_gerenciamento_projetos/blocs/provider.dart';
 import 'package:flutter/material.dart';
 

@@ -26,27 +26,17 @@ mixin Validators{
             }
         }
     );
-    final validateFuncaoUsuario = StreamTransformer<String, String>.fromHandlers(
-        handleData: (funcao, sink){
-            funcao = funcao.toLowerCase();
-            if (funcao == 'user' || funcao == 'adm') {
-              sink.add(funcao);
-            }
-            else{
-                sink.addError('A função deve ser "USER" ou "ADM"');
-            }
-        }
-    );
 
-    final validateOcupacaoUsuario = StreamTransformer<String, String>.fromHandlers(
-        handleData: (ocupacao, sink){
-            if (ocupacao.isNotEmpty) {
-                sink.add(ocupacao);
-            }
-            else{
-                sink.addError('Esse campo deve ser preenchido!!');
-            }
+    final validateTelefone = StreamTransformer<String, String>.fromHandlers(
+      handleData: (telefone, sink) {
+        // Expressão regular para validar o formato
+        final telefoneRegex = RegExp(r'^\d{2}\d{8,9}$');
+        if (telefoneRegex.hasMatch(telefone)) {
+          sink.add(telefone); // Telefone válido
+        } else {
+          sink.addError('Número de telefone inválido'); // Telefone inválido
         }
+      },
     );
 
     final validateFormatoData = StreamTransformer<String, String>.fromHandlers(
@@ -65,6 +55,16 @@ mixin Validators{
         handleData: (texto, sink){
             if(texto.isEmpty || texto == ''){
                 sink.addError('Campo obrigatório. Preencha esse campo!!');
+            }else{
+                sink.add(texto);
+            }
+        }
+    );
+
+    final validateCampoLinkFoto = StreamTransformer<String, String>.fromHandlers(
+        handleData: (texto, sink){
+            if(texto.isEmpty || texto == ''){
+                sink.add('');
             }else{
                 sink.add(texto);
             }

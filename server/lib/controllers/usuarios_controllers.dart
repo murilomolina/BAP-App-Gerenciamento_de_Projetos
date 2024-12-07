@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:mongo_dart/mongo_dart.dart';
+import 'package:shelf_router/shelf_router.dart';
 
 class UsuariosController {
   final Db db;
@@ -52,13 +53,26 @@ class UsuariosController {
   }
 
   // Método PUT: Atualiza um usuário
-  Future<Response> atualizarUsuario(Request request, int idUsuario) async {
+  Future<Response> atualizarUsuario(Request request) async {
     try {
+      // Obtendo o idUsuario dos parâmetros da URL
+      final idUsuarioStr = request.params['id_usuario']; // Extraindo como string
+      if (idUsuarioStr == null) {
+        return Response.badRequest(body: 'Parâmetro id_usuario é obrigatório');
+      }
+
+      final idUsuario = int.tryParse(idUsuarioStr);
+      if (idUsuario == null) {
+        return Response.badRequest(body: 'Parâmetro id_usuario deve ser um número válido');
+      }
+
+      // Lendo o corpo da requisição
       final data = await request.readAsString();
       final usuarioMap = jsonDecode(data);
 
+      // Atualizando o documento no MongoDB
       final updateResult = await usuariosCollection.updateOne(
-        where.eq('id_usuario', idUsuario),
+        where.eq('id_usuario', idUsuario), // Usa o idUsuario convertido
         modify.set('nome', usuarioMap['nome'])
               .set('email', usuarioMap['email'])
               .set('link_foto', usuarioMap['link_foto'])
@@ -66,6 +80,7 @@ class UsuariosController {
               .set('senha', usuarioMap['senha']),
       );
 
+      // Verificando o resultado da atualização
       if (updateResult.isSuccess) {
         return Response.ok('Usuário atualizado com sucesso');
       } else {
@@ -76,17 +91,32 @@ class UsuariosController {
     }
   }
 
+
   // Método DELETE: Deleta um usuário
-  Future<Response> deletarUsuario(Request request, int idUsuario) async {
+  Future<Response> deletarUsuario(Request request) async {
     try {
-      final deleteResult = await usuariosCollection.deleteOne({'id_usuario': idUsuario});
-      if (deleteResult.isSuccess) {
-        return Response.ok('Usuário deletado com sucesso');
+      final requestBody = await request.readAsString();
+      final data = jsonDecode(requestBody);
+      final  idUsuario = data['id_usuario'];  // Pegando o id do corpo da requisição
+
+      if (idUsuario == null) {
+        print("id NÃO CHEGOU NO SERVIDOR");
+        return Response.badRequest(body: 'id não informado');
+      }
+
+      // Busca o usuário pelo id e deleta
+      final result = await usuariosCollection.deleteOne({'id_usuario': idUsuario});
+
+      if (result.isSuccess) {
+        print("DELETOU");
+        return Response.ok('Usuário com id $idUsuario deletado com sucesso!');
       } else {
-        return Response.notFound('Usuário não encontrado');
+        print("id_usuario COM TEXTO ERRADO");
+        return Response.notFound('Usuário com if $idUsuario não encontrado.');
       }
     } catch (e) {
-      return Response.internalServerError(body: 'Erro ao deletar usuário: $e');
+      print('Erro ao deletar usuário: $e');
+      return Response.internalServerError(body: 'Erro interno ao processar a requisição');
     }
   }
 

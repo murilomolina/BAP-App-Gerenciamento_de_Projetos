@@ -1,5 +1,6 @@
 import 'package:bap_gerenciamento_projetos/blocs/provider.dart';
 import 'package:bap_gerenciamento_projetos/pages/calculo_inclinacao.dart';
+import 'package:bap_gerenciamento_projetos/pages/controle_usuarios.dart';
 import 'package:bap_gerenciamento_projetos/pages/home_page.dart';
 import 'package:flutter/material.dart';
 
@@ -40,7 +41,7 @@ class CustomDrawer extends StatelessWidget {
             title: const Text('Configurações'),
             onTap: () {
               Navigator.pop(context);
-              // Navegar para a página de configurações
+              _showConfiguracoesOptions(context);
             },
           ),
           ListTile(
@@ -87,7 +88,7 @@ class CustomDrawer extends StatelessWidget {
             title: const Text('Configurações'),
             onTap: () {
               Navigator.pop(context);
-              // Navegar para a página de configurações
+              _showConfiguracoesOptions(context);
             },
           ),
           ListTile(
@@ -169,6 +170,75 @@ class CustomDrawer extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const HomePage()),
+                        );
+                      },
+                    ),
+                    
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).primaryColor,
+                  ),
+                  child: const Text("Cancelar"),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showConfiguracoesOptions(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Center(
+          child: SingleChildScrollView(
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15), 
+              ),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.settings, color: Theme.of(context).primaryColor),
+                      const SizedBox(width: 8), // Espaçamento entre ícone e texto
+                      const Text(
+                        'Configurações',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Fechar o pop-up
+                    },
+                  ),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildOptionTile(
+                      context,
+                      "Controle de usuários",
+                      Icons.supervised_user_circle, // Ícone para o cálculo de inclinação
+                      () {
+                        Navigator.pop(context); // Fecha o diálogo
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ControleUsuarios()),
                         );
                       },
                     ),

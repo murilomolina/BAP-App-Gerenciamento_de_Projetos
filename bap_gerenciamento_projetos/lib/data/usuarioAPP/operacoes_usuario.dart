@@ -87,7 +87,7 @@ Future<List<int>> consultaEmails(String email) async {
   }
 }
 
-Future<String> achaUserID(emailBusca) async {
+Future<int> achaUserID(emailBusca) async {
   final url = Uri.parse('$serverUrl/usuarios');  // Requisição sem filtros para o servidor
 
   try {
@@ -102,30 +102,30 @@ Future<String> achaUserID(emailBusca) async {
 
       if (user != null) {
         // Retorna o ID do usuário encontrado
-        return user['id_usuario'].toString();
+        return user['id_usuario'];
       } else {
         // Retorna uma mensagem de erro caso o usuário não seja encontrado
-        return 'Usuário não encontrado';
+        return -1;
       }
     } else {
       print('Erro ao obter usuário: ${response.statusCode}');
-      return 'Erro ao obter dados dos usuário';
+      return -1;
     }
   } catch (e) {
     print('Erro: $e');
-    return 'Erro na requisição';
+    return -1;
   }
 }
 
 // Função para inserir um novo usuário
-Future<void> inserirUsuario(String nome, String email, String linkFoto, String telefone, String senha) async {
+Future<void> inserirUsuario(String nome, String email, String? linkFoto, String telefone, String senha) async {
   final url = Uri.parse('$serverUrl/usuarios/novo'); // Rota para inserir um novo usuário
 
   // Cria o JSON com os dados do novo usuário
   final usuarioData = {
     'nome': nome,
     'email': email,
-    'link_foto': linkFoto,
+    'link_foto': linkFoto ?? '',
     'telefone': telefone,
     'senha': senha,
   };
@@ -183,7 +183,7 @@ Future<void> editarUsuario(int idUsuario, String? novoNome, String? novoEmail, S
   }
 }
 
-Future<void> deletaUsuario(String idUsuario) async {
+Future<void> deletaUsuario(int idUsuario) async {
   final url = Uri.parse('$serverUrl/usuarios/delete');  // URL para deletar usuários
 
   // Cria o JSON com os dados do novo usuário
