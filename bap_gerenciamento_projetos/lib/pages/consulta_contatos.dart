@@ -1,5 +1,6 @@
 import 'package:bap_gerenciamento_projetos/classes/custom_appbar.dart';
 import 'package:bap_gerenciamento_projetos/classes/custom_drawer.dart';
+import 'package:bap_gerenciamento_projetos/data/contatos/operacoes_contato.dart';
 import 'package:flutter/material.dart';
 
 class ConsultaContatos extends StatelessWidget {
@@ -7,12 +8,10 @@ class ConsultaContatos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ValueNotifier<String> searchQuery = ValueNotifier('');
-    final ValueNotifier<List<Map<String, dynamic>>> contatosNotifier = ValueNotifier([]);
+    final searchQuery = ValueNotifier<String>('');
+    final contatosNotifier = ValueNotifier<List<Contato>>([]); // Alterado para List<Contato>
 
-    // Carregar os contatos inicialmente
     _carregarContatos(contatosNotifier);
-
 
     return Scaffold(
       appBar: const CustomAppBar(),
@@ -21,20 +20,17 @@ class ConsultaContatos extends StatelessWidget {
         children: [
           _barraDeBusca(searchQuery),
           Expanded(
-            child: ValueListenableBuilder<List<Map<String, dynamic>>>(
+            child: ValueListenableBuilder<List<Contato>>( // Alterado para List<Contato>
               valueListenable: contatosNotifier,
-              builder: (context, contatos, child) {
+              builder: (context, contatos, _) {
                 if (contatos.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
                 return ValueListenableBuilder<String>(
                   valueListenable: searchQuery,
-                  builder: (context, query, child) {
-                    // Filtrando os contatos com base na query
-                    final filteredContatos = contatos.where((contato) {
-                      return contato['nome_contato'].toLowerCase().contains(query.toLowerCase());
-                    }).toList();
+                  builder: (context, query, _) {
+                    final filteredContatos = _filtrarContatos(contatos, query);
 
                     if (filteredContatos.isEmpty) {
                       return const Center(child: Text('Nenhum contato encontrado.'));
@@ -43,8 +39,7 @@ class ConsultaContatos extends StatelessWidget {
                     return ListView.builder(
                       itemCount: filteredContatos.length,
                       itemBuilder: (context, index) {
-                        final contato = filteredContatos[index];
-                        return _itemContato(contato, context);
+                        return _itemContato(filteredContatos[index], context);
                       },
                     );
                   },
@@ -57,134 +52,13 @@ class ConsultaContatos extends StatelessWidget {
     );
   }
 
-  Future<void> _carregarContatos(ValueNotifier<List<Map<String, dynamic>>> contatosNotifier) async {
-    // final contatos = await getAllContatos();
-    // contatosNotifier.value = contatos;
-  }
-
-  Widget _itemContato(Map<String, dynamic> contato, BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      elevation: 10,
-      color: Theme.of(context).primaryColor,
-      child: ListTile(
-        title: Text(
-          contato['nome_contato'],
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        subtitle: Text(
-          contato['telefone_contato'],
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
-        onTap: () {
-          _maisInfoContato(contato, context);
-        },
-      ),
-    );
-  }
-
-  void _maisInfoContato(Map<String, dynamic> contato, BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
-                  const Text(' Informações'),
-                ],
-              ),
-              IconButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 153, 153, 153),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Fechar o pop-up
-                },
-                icon: const Icon(Icons.close, size: 18),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Padding(
-              padding: const EdgeInsets.all(0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    contato['nome_contato'],
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const Divider(thickness: 2),
-                  const SizedBox(height: 8),
-                  _buildInfoRow('Telefone', contato['telefone_contato']),
-                  _buildInfoRow('E-mail', contato['email_contato']),
-                  
-                ],
-              ),
-            ),
-          ),
-          actions: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Navegar para a página de links no futuro.
-                  },
-                  icon: const Icon(Icons.arrow_forward, size: 18),
-                  label: const Text('Linkar contato a um serviço'),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-
-  // Função auxiliar para criar uma linha de informações estilizadas
-  Widget _buildInfoRow(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // Alinhar texto à esquerda
-        children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 4), // Espaço entre o label e o valor
-          Text(
-            value,
-            softWrap: true,
-            overflow: TextOverflow.visible, // Faz o texto quebrar a linha automaticamente
-          ),
-        ],
-      ),
-    );
+  Future<void> _carregarContatos(ValueNotifier<List<Contato>> contatosNotifier) async { // Alterado para List<Contato>
+    try {
+      final contatos = await getTodosContatos(); // Obtém a lista de Contatos
+      contatosNotifier.value = contatos; // Atualiza o ValueNotifier com a lista de Contatos
+    } catch (e) {
+      print('Erro ao carregar contatos: $e');
+    }
   }
 
   Widget _barraDeBusca(ValueNotifier<String> searchQuery) {
@@ -196,16 +70,141 @@ class ConsultaContatos extends StatelessWidget {
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.grey.shade400),
           ),
           filled: true,
           fillColor: Colors.grey[200],
         ),
-        onChanged: (value) {
-          // Atualizando a query de busca
-          searchQuery.value = value;
-        },
+        onChanged: (value) => searchQuery.value = value,
       ),
+    );
+  }
+
+  List<Contato> _filtrarContatos(List<Contato> contatos, String query) { // Alterado para List<Contato>
+    return contatos
+        .where((contato) => contato.nome.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+  }
+
+  Widget _itemContato(Contato contato, BuildContext context) { // Alterado para Contato
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      elevation: 5,
+      child: ListTile(
+        title: Text(
+          contato.nome,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        subtitle: Text(contato.telefone),
+        trailing: const Icon(Icons.arrow_forward_ios),
+        onTap: () => _mostrarDetalhesContato(contato, context),
+      ),
+    );
+  }
+
+  void _mostrarDetalhesContato(Contato contato, BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: _tituloPopUp(context),
+        content: _conteudoPopUp(contato, context),
+        actions: [Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _botaoAcao(context),
+          ],
+        )],
+      ),
+    );
+  }
+
+  Widget _tituloPopUp(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 8),
+            const Text('Informações'),
+          ],
+        ),
+        IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.close, size: 18),
+        ),
+      ],
+    );
+  }
+
+  Widget _conteudoPopUp(Contato contato, context) { // Alterado para Contato
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _informacaoContato('Nome', contato.nome),
+          const Divider(thickness: 1.5),
+          _informacaoContato('E-mail', contato.email),
+          _informacaoContato('Telefone', contato.telefone),
+          _informacaoContato('CPF', contato.cpf),
+          _informacaoContato('RG', contato.rg),
+          _informacaoContato('Chave pix', contato.chavePix),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.home, color: Theme.of(context).primaryColor),
+                    const SizedBox(width: 4),
+                    const Text('Endereço', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          _informacaoContato('Rua', contato.endereco.rua),
+          _informacaoContato('Número', contato.endereco.numero),
+          _informacaoContato('Bairro', contato.endereco.bairro),  
+          _informacaoContato('Cidade', contato.endereco.cidade),
+          _informacaoContato('CEP', contato.endereco.cep),
+          _informacaoContato('Observações', contato.endereco.observacoes),        
+        ],
+      ),
+    );
+  }
+
+  Widget _informacaoContato(String titulo, String valor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$titulo:',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 4),
+          Text(valor, style: const TextStyle(fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
+  Widget _botaoAcao(BuildContext context) {
+    return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).primaryColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onPressed: () => Navigator.pop(context),
+      icon: const Icon(Icons.work, size: 18),
+      label: const Text('Serviços'),
     );
   }
 }

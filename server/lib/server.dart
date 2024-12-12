@@ -1,7 +1,8 @@
 import 'package:mongo_dart/mongo_dart.dart';
+import 'package:server/controllers/contatos_controllers.dart';
 import 'package:server/controllers/usuarios_controllers.dart';
 import 'package:server/database.dart';
-import 'package:shelf_router/shelf_router.dart';
+import 'package:server/routes/router.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_cors_headers/shelf_cors_headers.dart';
@@ -16,22 +17,19 @@ void start() async {
 
   Db db = await conectarAoBanco();
   
-  // Cria a instância do controlador de usuários
+  // Controladores
   final usuariosController = UsuariosController(db);
+  final contatosController = ContatosController(db);
+  // final projetosController = ProjetosController(db);
+  // final procuracaoController = ProcuracaoController(db);
 
-  // Cria as rotas usando shelf_router
-  final router = Router();
-
-  // Define as rotas
-  router.get('/usuarios', usuariosController.listarUsuarios);
-  router.post('/usuarios/novo', usuariosController.criarUsuario);
-  router.put('/usuarios/<id_usuario>', usuariosController.atualizarUsuario);
-  router.delete('/usuarios/delete', usuariosController.deletarUsuario);
-
-  // Rota 404 para rotas não encontradas
-  router.all('/<ignored|.*>', (Request request) {
-    return Response.notFound('Rota não encontrada');
-  });
+  // Rotas
+  final router = criarRouter(
+    usuariosController,
+    contatosController,
+    // projetosController,
+    // procuracaoController,
+  );
 
   // Cria o handler para o servidor com middlewares
   final handler = const Pipeline()
