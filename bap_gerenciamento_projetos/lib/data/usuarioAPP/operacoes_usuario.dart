@@ -117,6 +117,40 @@ Future<int> achaUserID(emailBusca) async {
   }
 }
 
+Future<String> achaUserNome(int userId) async {
+  final url = Uri.parse('$serverUrl/usuarios');  // Requisição sem filtros para o servidor
+
+  try {
+    // Fazendo a requisição HTTP para buscar todos os usuários
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> usuariosJson = jsonDecode(response.body);
+      
+      // Filtra o usuário com o ID correspondente
+      var user = usuariosJson.firstWhere(
+        (usuario) => usuario['id_usuario'] == userId, 
+        orElse: () => null,
+      );
+
+      if (user != null) {
+        // Retorna o nome do usuário encontrado
+        return user['nome'].toString();
+      } else {
+        // Retorna uma mensagem de erro caso o usuário não seja encontrado
+        return 'Usuário não encontrado';
+      }
+    } else {
+      print('Erro ao obter usuário: ${response.statusCode}');
+      return 'ERRO';
+    }
+  } catch (e) {
+    print('Erro: $e');
+    return "ERRO";
+  }
+}
+
+
 // Função para inserir um novo usuário
 Future<void> inserirUsuario(String nome, String email, String? linkFoto, String telefone, String senha) async {
   final url = Uri.parse('$serverUrl/usuarios/novo'); // Rota para inserir um novo usuário

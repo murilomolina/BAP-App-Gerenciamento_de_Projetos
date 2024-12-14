@@ -34,6 +34,7 @@ class AuthService {
     for (final usuario in usuarios) {
       if (usuario.email == email && usuario.senha == senha) {
         userData = {
+          'id_usuario':usuario.idUsuario,
           'nome': usuario.nome,
           'email': usuario.email,
           'link_foto': usuario.linkFoto,

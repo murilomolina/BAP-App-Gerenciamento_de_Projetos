@@ -22,6 +22,18 @@ class UsuariosController {
     }
   }
 
+  Future<Response> listarNomesUsuarios(Request request) async {
+    final usuarios = await usuariosCollection.find().toList();
+
+    if (usuarios.isNotEmpty) {
+      // Extrai apenas os nomes
+      final nomes = usuarios.map((usuario) => usuario['nome']).toList();
+      return Response.ok(jsonEncode(nomes), headers: {'Content-Type': 'application/json'},);
+    } else {
+      return Response.ok('[]', headers: {'Content-Type': 'application/json'});
+    }
+  }
+
   // Método POST: Cria um novo usuário
   Future<Response> criarUsuario(Request request) async {
     try {

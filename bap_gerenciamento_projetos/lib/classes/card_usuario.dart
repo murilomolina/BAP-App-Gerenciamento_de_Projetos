@@ -71,7 +71,7 @@ class Cardusuario extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 14, 
                 fontWeight: FontWeight.bold,
-                color: Colors.black, 
+                color: Colors.white, 
               ),
             ),
             // Botões de Editar e Excluir

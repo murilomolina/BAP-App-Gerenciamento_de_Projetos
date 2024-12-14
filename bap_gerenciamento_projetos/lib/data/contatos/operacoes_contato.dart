@@ -7,12 +7,12 @@ class Contato {
   int idContato;
   int pertenceUsuario; // aqui vem o id do usuario que cadastrou esse contato.
   String nome;
-  String email;
+  String? email;
   String telefone;
-  String cpf;
-  String rg;
-  String chavePix;
-  Endereco endereco;
+  String? cpf;
+  String? rg;
+  String? chavePix;
+  Endereco? endereco;
 
   // Construtor
   Contato({
@@ -72,5 +72,77 @@ Future<List<Contato>> getTodosContatos() async {
   } catch (e) {
     print('Erro ao consultar contatos: $e');
     return [];
+  }
+}
+
+Future<bool> cadastrarContato(int pertenceUsuario, String nome, String? email, String telefone, String? cpf, String? rg, String? chavePix, String? rua, String? numero, String? bairro, String? cidade, String? cep, String? observacoes)async {
+  final url = Uri.parse('$serverUrl/contatos/novo'); // URL para o endpoint de cadastro de contatos
+
+  try {
+    // Cria um Map com os dados do contato para enviar no corpo da requisição
+    final Map<String, dynamic> contatoJson = {
+      'pertence_usuario': pertenceUsuario,
+      'nome': nome,
+      'email': email,
+      'telefone': telefone,
+      'cpf': cpf,
+      'rg': rg,
+      'chave_pix': chavePix,
+      'endereco': {
+        'rua': rua,
+        'numero': numero,
+        'bairro': bairro,
+        'cidade': cidade,
+        'cep': cep,
+        'observacoes': observacoes,
+      },
+    };
+
+    // Envia a requisição POST com o JSON no corpo
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(contatoJson),
+    );
+
+    if (response.statusCode == 201) {
+      // Sucesso! O contato foi criado
+      print('Contato cadastrado com sucesso.');
+      return true;
+    } else {
+      // Caso não tenha sido bem-sucedido, mostra o erro
+      print('Erro ao cadastrar contato: Código HTTP ${response.statusCode}');
+      return false;
+    }
+  } catch (e) {
+    // Se ocorrer algum erro durante a requisição, mostra o erro
+    print('Erro ao cadastrar contato: $e');
+    return false;
+  }
+}
+
+Future<bool> excluirContato(int idContato) async {
+  final url = Uri.parse('$serverUrl/contatos/$idContato'); // URL para o contato específico
+
+  try {
+    // Envia a requisição DELETE para excluir o contato
+    final response = await http.delete(
+      url,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      // Sucesso! O contato foi excluído
+      print('Contato excluído com sucesso.');
+      return true;
+    } else {
+      // Caso não tenha sido bem-sucedido, mostra o erro
+      print('Erro ao excluir contato: Código HTTP ${response.statusCode}');
+      return false;
+    }
+  } catch (e) {
+    // Se ocorrer algum erro durante a requisição, mostra o erro
+    print('Erro ao excluir contato: $e');
+    return false;
   }
 }

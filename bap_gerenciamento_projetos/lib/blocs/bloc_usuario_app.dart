@@ -63,6 +63,8 @@ class LoginUsuarioBloc with Validators{
       final userData = await _authService.getUserData(email, senha);
       if (userData != null) {
         // Armazena os dados do usuário nas variáveis do BLoC
+        _idUsuario = userData['id_usuario'];
+        print(_idUsuario);
         _nome = userData['nome'];
         _email = userData['email'];
         _linkFoto = userData['link_foto'];
